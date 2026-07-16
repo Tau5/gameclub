@@ -1,0 +1,56 @@
+package uno.tau0.gameclub;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Collection;
+import java.util.List;
+
+@Entity
+@RequiredArgsConstructor
+@AllArgsConstructor
+@Data
+public class User implements UserDetails {
+    @Id
+    public String name;
+
+    public String displayName;
+
+    public String role;
+
+    public String password;
+
+    @ManyToMany
+    @JoinTable(name="game_ownership")
+    public List<Game> ownedGames;
+
+    @ManyToOne
+    public Group group;
+
+    public User(String name, String displayName, String password, Group group) {
+        this.name = name;
+        this.displayName = displayName;
+        this.password = password;
+        this.role = "USER";
+        this.group = group;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(
+                new SimpleGrantedAuthority(role)
+        );
+    }
+
+    @Override
+    public String getUsername() {
+        return name;
+    }
+}
