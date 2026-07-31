@@ -2,9 +2,11 @@ package uno.tau0.gameclub;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import uno.tau0.gameclub.dto.GameDto;
+import uno.tau0.gameclub.dto.JoinClubRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -76,6 +78,16 @@ public class UserController {
     public void removeOwnedGame(@PathVariable Long gameId) throws Exception {
         User user = userService.getLoggedInUser().orElseThrow();
         userService.removeOwnedGame(user, gameId);
+    }
+
+    @PostMapping("me/clubs")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<String> joinClub(@RequestBody JoinClubRequest request) {
+        if (userService.joinClub(request.clubName(), request.password())) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully joined club");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Failed to join club");
+        }
     }
 
     record NewUser (
