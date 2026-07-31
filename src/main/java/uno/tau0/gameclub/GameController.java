@@ -3,6 +3,7 @@ package uno.tau0.gameclub;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import uno.tau0.gameclub.dto.GameDto;
 
 import java.awt.print.Book;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,8 +16,8 @@ public class GameController {
     private GameRepository repository;
 
     @GetMapping
-    public Iterable<Game> findAll() {
-        return repository.findAll();
+    public Iterable<GameDto> findAll() {
+        return repository.findAll().stream().map(GameDto::new).toList();
     }
 
     record NewGame(

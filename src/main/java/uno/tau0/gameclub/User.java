@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @RequiredArgsConstructor
@@ -29,17 +30,18 @@ public class User implements UserDetails {
 
     @ManyToMany
     @JoinTable(name="game_ownership")
-    public List<Game> ownedGames;
+    public Set<Game> ownedGames;
 
-    @ManyToOne
-    public Group group;
+    @ManyToMany
+    @JoinTable(name="user_groups")
+    public Set<Group> groups;
 
-    public User(String name, String displayName, String password, Group group) {
+    public User(String name, String displayName, String password, Set<Group> groups) {
         this.name = name;
         this.displayName = displayName;
         this.password = password;
         this.role = "USER";
-        this.group = group;
+        this.groups = groups;
     }
 
     @Override

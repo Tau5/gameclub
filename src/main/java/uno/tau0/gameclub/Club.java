@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class Club {
 
     @ManyToMany
     @JoinTable(name = "club_games")
-    List<Game> backlog;
+    Set<Game> backlog;
 
     String name;
 

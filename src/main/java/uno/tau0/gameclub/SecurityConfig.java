@@ -78,6 +78,8 @@ public class SecurityConfig {
                 .setAllowedOriginPatterns(List.of("http://localhost:4200", "http://localhost:4269"))
                 .applyPermitDefaultValues();
         corsConf.setAllowCredentials(true);
+        corsConf.addAllowedMethod("PATCH");
+        corsConf.addAllowedMethod("DELETE");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConf);

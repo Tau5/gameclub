@@ -1,10 +1,15 @@
 package uno.tau0.gameclub;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import uno.tau0.gameclub.dto.GameDto;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
 ENDPOINTS
@@ -37,21 +42,44 @@ public class UserController {
     record UserDto(
         String username,
         String displayName,
-        String role
+        String role,
+        Set<String> groups
     ) {
         UserDto(User u) {
-            this(u.name, u.displayName, u.role);
+            this(u.name,
+                    u.displayName,
+                    u.role,
+                    u.groups.stream()
+                            .map(g -> g.name)
+                            .collect(Collectors.toSet())
+            );
         }
-    }
-
-    @GetMapping()
-    public Iterable<UserDto> getUsers() {
-        return users.findAll().stream().map(UserDto::new).toList();
     }
 
     @GetMapping("me")
     public Optional<UserDto> getLoggedUser() {
         return userService.getLoggedInUser().map(UserDto::new);
+    }
+
+    @GetMapping("me/games")
+    public Iterable<GameDto> getOwnedGames() {
+        return userService.getLoggedInUser().map(u ->
+                userService.getOwnedGames(u)
+        ).orElse(List.of());
+    }
+
+    @PostMapping("me/games")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addOwnedGame(@RequestParam Long gameId) throws Exception {
+        User user = userService.getLoggedInUser().orElseThrow();
+        userService.addOwnedGame(user, gameId);
+    }
+
+    @DeleteMapping("me/games/{gameId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeOwnedGame(@PathVariable Long gameId) throws Exception {
+        User user = userService.getLoggedInUser().orElseThrow();
+        userService.removeOwnedGame(user, gameId);
     }
 
     record NewUser (

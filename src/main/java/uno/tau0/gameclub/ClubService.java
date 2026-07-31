@@ -1,12 +1,11 @@
 package uno.tau0.gameclub;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
+import uno.tau0.gameclub.dto.GameDto;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -15,13 +14,19 @@ public class ClubService {
     private ClubRepository clubs;
 
     @Autowired
+    private GameRepository games;
+
+    @Autowired
     private UserService userService;
 
-    Iterable<Club> adminGetAllClubs()  {
+    @Autowired
+    private UserRepository userRepository;
+
+    List<Club> adminGetAllClubs()  {
         return clubs.findAll();
     }
 
-    Iterable<Club> getAvailableClubs() {
+    List<Club> getAvailableClubs(String groupId) {
         return userService.getLoggedInUser().map(u -> {
             return clubs.findByGroup(u.group);
         }).orElseGet(List::of);
@@ -38,8 +43,26 @@ public class ClubService {
         }
     }
 
+    boolean hasPermission(Club club) {
+        var isAdmin = userService.isAdmin();
+        var group = userService.getLoggedInUser().map(u -> u.group.id).orElse(null);
+        return isAdmin || Objects.equals(group, club.group.id);
+    }
+
     void addGameToBacklog(Club club, Game game) {
-        club.backlog.add(game);
+        if (!hasPermission(club)) return;
+        if (!club.backlog.stream().anyMatch(g -> g.getId() == game.getId())) {
+            club.backlog.add(game);
+            clubs.save(club);
+        }
+    }
+
+    void removeGameFromBacklog(Long clubId, Long gameId) {
+        Club club = getClubById(clubId).orElseThrow();
+        Game game = games.findById(gameId).orElseThrow();
+
+        if (!hasPermission(club)) return;
+        club.backlog.removeIf(g -> g.getId().equals(game.getId()));
         clubs.save(club);
     }
 
@@ -49,5 +72,28 @@ public class ClubService {
             clubs.save(club);
             return true;
         }).orElse(false);
+    }
+
+    Iterable<GameDto> getBacklog(Club club) {
+        return club.backlog.stream().map(GameDto::new).toList();
+    }
+
+    Iterable<GameDto> getGamesOwnedByAll(Club club) {
+        var games = club.getBacklog();
+        var users = userRepository.findByGroupIdIs(club.getGroup().getId());
+
+        return games.stream().filter(g ->
+            users.stream().allMatch(
+                    u -> u.ownedGames.stream().anyMatch(o -> o.getId().equals(g.getId()))
+            )
+        ).map(GameDto::new).toList();
+    }
+
+    void setCurrentGame(Long clubId, Long gameId) {
+        Club club = getClubById(clubId).orElseThrow();
+        Game game = games.findById(gameId).orElseThrow();
+
+        club.setCurrentGame(game);
+        clubs.save(club);
     }
 }

@@ -7,5 +7,5 @@ import java.util.List;
 
 @Repository
 public interface ClubRepository extends JpaRepository<Club, Long> {
-    Iterable<Club> findByGroup(Group group);
+    List<Club> findByGroup(Group group);
 }

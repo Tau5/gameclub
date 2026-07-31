@@ -19,7 +19,7 @@ public class Group {
 
     String name;
 
-    @OneToMany
+    @ManyToMany //?
     List<User> members;
 
     public Group(String name) {
