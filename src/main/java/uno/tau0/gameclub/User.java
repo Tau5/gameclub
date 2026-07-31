@@ -33,15 +33,14 @@ public class User implements UserDetails {
     public Set<Game> ownedGames;
 
     @ManyToMany
-    @JoinTable(name="user_groups")
-    public Set<Group> groups;
+    @JoinTable(name="user_clubs")
+    public Set<Club> clubs;
 
-    public User(String name, String displayName, String password, Set<Group> groups) {
+    public User(String name, String displayName, String password) {
         this.name = name;
         this.displayName = displayName;
         this.password = password;
         this.role = "USER";
-        this.groups = groups;
     }
 
     @Override

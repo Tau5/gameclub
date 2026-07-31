@@ -20,9 +20,6 @@ public class UserService {
     GameRepository games;
 
     @Autowired
-    GroupRespository groupRespository;
-
-    @Autowired
     PasswordEncoder passwordEncoder;
 
     private UserDetails getSpringUser() {
@@ -40,12 +37,10 @@ public class UserService {
     }
 
     User createUserWithDefaults(String username, String displayName, String password) {
-       Group group = groupRespository.findById(1L).orElseThrow();
        User user = new User(
                username,
                displayName,
-               passwordEncoder.encode(password),
-               Set.of(group)
+               passwordEncoder.encode(password)
        );
 
        return userRepository.save(user);
@@ -69,4 +64,5 @@ public class UserService {
                 .map(GameDto::new)
                 .toList();
     }
+
 }

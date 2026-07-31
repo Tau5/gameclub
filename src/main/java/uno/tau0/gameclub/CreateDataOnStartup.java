@@ -7,13 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CreateDataOnStartup {
-    @Autowired
-    GroupRespository groupRespository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void createData() {
-        if (!groupRespository.existsById(1L)) {
-            groupRespository.save(new Group("default"));
-        }
     }
 }

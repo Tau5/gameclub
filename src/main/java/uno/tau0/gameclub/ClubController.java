@@ -65,7 +65,7 @@ public class ClubController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public HttpStatus create(@RequestBody ClubCreateRequest club) {
-        if (clubs.createClub(club.name())) {
+        if (clubs.createClub(club.name(), club.password())) {
             return HttpStatus.CREATED;
         } else {
             return HttpStatus.INTERNAL_SERVER_ERROR;

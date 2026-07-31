@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+
 
 @Entity
 @RequiredArgsConstructor
@@ -27,11 +27,13 @@ public class Club {
 
     String name;
 
-    @ManyToOne
-    Group group;
+    String password;
 
-    public Club(String name, Group group) {
+    @ManyToMany(mappedBy = "clubs")
+    List<User> members;
+
+    public Club(String name, String password) {
         this.name = name;
-        this.group = group;
+        this.password = password;
     }
 }

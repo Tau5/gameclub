@@ -1,6 +1,7 @@
 package uno.tau0.gameclub;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uno.tau0.gameclub.dto.GameDto;
 
@@ -22,21 +23,22 @@ public class ClubService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     List<Club> adminGetAllClubs()  {
         return clubs.findAll();
     }
 
-    List<Club> getAvailableClubs(String groupId) {
+    List<Club> getAvailableClubs() {
         return userService.getLoggedInUser().map(u -> {
-            return clubs.findByGroup(u.group);
+            return u.clubs.stream().toList();
         }).orElseGet(List::of);
     }
 
     Optional<Club> getClubById(Long id) {
-       var isAdmin = userService.isAdmin();
-       var group = userService.getLoggedInUser().map(u -> u.group.id).orElse(null);
        var maybeClub = clubs.findById(id);
-       if (maybeClub.isPresent() && (isAdmin || maybeClub.get().group.id.equals(group))) {
+       if (maybeClub.isPresent() && hasPermission(maybeClub.get())) {
            return maybeClub;
         } else {
            return Optional.empty();
@@ -45,8 +47,10 @@ public class ClubService {
 
     boolean hasPermission(Club club) {
         var isAdmin = userService.isAdmin();
-        var group = userService.getLoggedInUser().map(u -> u.group.id).orElse(null);
-        return isAdmin || Objects.equals(group, club.group.id);
+        var userIsInClub = userService.getLoggedInUser().stream().anyMatch(u -> {
+            return u.clubs.stream().anyMatch(c -> c.id.equals(club.id));
+        });
+        return isAdmin || userIsInClub;
     }
 
     void addGameToBacklog(Club club, Game game) {
@@ -66,9 +70,9 @@ public class ClubService {
         clubs.save(club);
     }
 
-    boolean createClub(String name) {
+    boolean createClub(String name, String password) {
         return userService.getLoggedInUser().map(u -> {
-            var club = new Club(name, u.group);
+            var club = new Club(name, passwordEncoder.encode(password));
             clubs.save(club);
             return true;
         }).orElse(false);
@@ -80,7 +84,7 @@ public class ClubService {
 
     Iterable<GameDto> getGamesOwnedByAll(Club club) {
         var games = club.getBacklog();
-        var users = userRepository.findByGroupIdIs(club.getGroup().getId());
+        var users = club.getMembers();
 
         return games.stream().filter(g ->
             users.stream().allMatch(

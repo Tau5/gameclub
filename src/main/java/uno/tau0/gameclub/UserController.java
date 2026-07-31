@@ -42,16 +42,12 @@ public class UserController {
     record UserDto(
         String username,
         String displayName,
-        String role,
-        Set<String> groups
+        String role
     ) {
         UserDto(User u) {
             this(u.name,
                     u.displayName,
-                    u.role,
-                    u.groups.stream()
-                            .map(g -> g.name)
-                            .collect(Collectors.toSet())
+                    u.role
             );
         }
     }
