@@ -36,8 +36,8 @@ public class ClubService {
         }).orElseGet(List::of);
     }
 
-    Optional<Club> getClubById(Long id) {
-       var maybeClub = clubs.findById(id);
+    Optional<Club> getClubById(String name) {
+       var maybeClub = clubs.findById(name);
        if (maybeClub.isPresent() && hasPermission(maybeClub.get())) {
            return maybeClub;
         } else {
@@ -48,7 +48,7 @@ public class ClubService {
     boolean hasPermission(Club club) {
         var isAdmin = userService.isAdmin();
         var userIsInClub = userService.getLoggedInUser().stream().anyMatch(u -> {
-            return u.clubs.stream().anyMatch(c -> c.id.equals(club.id));
+            return u.clubs.stream().anyMatch(c -> c.name.equals(club.name));
         });
         return isAdmin || userIsInClub;
     }
@@ -61,8 +61,8 @@ public class ClubService {
         }
     }
 
-    void removeGameFromBacklog(Long clubId, Long gameId) {
-        Club club = getClubById(clubId).orElseThrow();
+    void removeGameFromBacklog(String clubName, Long gameId) {
+        Club club = getClubById(clubName).orElseThrow();
         Game game = games.findById(gameId).orElseThrow();
 
         if (!hasPermission(club)) return;
@@ -70,9 +70,9 @@ public class ClubService {
         clubs.save(club);
     }
 
-    boolean createClub(String name, String password) {
+    boolean createClub(String name, String displayName, String password) {
         return userService.getLoggedInUser().map(u -> {
-            var club = new Club(name, passwordEncoder.encode(password));
+            var club = new Club(name, displayName, passwordEncoder.encode(password));
             clubs.save(club);
             return true;
         }).orElse(false);
@@ -93,11 +93,24 @@ public class ClubService {
         ).map(GameDto::new).toList();
     }
 
-    void setCurrentGame(Long clubId, Long gameId) {
-        Club club = getClubById(clubId).orElseThrow();
+    void setCurrentGame(String clubName, Long gameId) {
+        Club club = getClubById(clubName).orElseThrow();
         Game game = games.findById(gameId).orElseThrow();
 
         club.setCurrentGame(game);
         clubs.save(club);
+    }
+
+    boolean joinClub(User user, Club club, String password) {
+        if (userService.isAdmin() || passwordEncoder.matches(password, club.password)) {
+            user.clubs.add(club);
+            club.members.add(user);
+
+            userRepository.save(user);
+            clubs.save(club);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

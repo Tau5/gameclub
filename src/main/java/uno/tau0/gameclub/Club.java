@@ -14,8 +14,7 @@ import java.util.Set;
 @Data
 public class Club {
     @Id
-    @GeneratedValue
-    Long id;
+    String name;
 
     @ManyToOne
     @Nullable
@@ -25,15 +24,16 @@ public class Club {
     @JoinTable(name = "club_games")
     Set<Game> backlog;
 
-    String name;
+    String displayName;
 
     String password;
 
     @ManyToMany(mappedBy = "clubs")
     List<User> members;
 
-    public Club(String name, String password) {
+    public Club(String name, String displayName, String password) {
         this.name = name;
+        this.displayName = displayName;
         this.password = password;
     }
 }

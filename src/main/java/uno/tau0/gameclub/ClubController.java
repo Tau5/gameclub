@@ -1,6 +1,5 @@
 package uno.tau0.gameclub;
 
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,16 +7,14 @@ import org.springframework.web.bind.annotation.*;
 import uno.tau0.gameclub.dto.ClubCreateRequest;
 import uno.tau0.gameclub.dto.GameDto;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 record ClubDTO (
-    Long id,
-    String name
+    String name,
+    String displayName
 ) {
     ClubDTO(Club club) {
-        this(club.id, club.name);
+        this(club.name, club.displayName);
     }
 }
 
@@ -41,41 +38,41 @@ public class ClubController {
         return clubs.getAvailableClubs().stream().map(ClubDTO::new).toList();
     }
 
-    @GetMapping("{id}")
-    public Optional<ClubDTO> findById(@PathVariable Long id) {
-        return clubs.getClubById(id).map(ClubDTO::new);
+    @GetMapping("{name}")
+    public Optional<ClubDTO> findById(@PathVariable String name) {
+        return clubs.getClubById(name).map(ClubDTO::new);
     }
 
-    @GetMapping("{id}/backlog")
-    public Optional<Iterable<GameDto>> clubBacklog(@PathVariable Long id) {
-        return clubs.getClubById(id).map(clubs::getBacklog);
+    @GetMapping("{name}/backlog")
+    public Optional<Iterable<GameDto>> clubBacklog(@PathVariable String name) {
+        return clubs.getClubById(name).map(clubs::getBacklog);
     }
 
-    @GetMapping("{id}/currentGame")
-    public Optional<GameDto> clubCurrentGame(@PathVariable Long id) {
-        return clubs.getClubById(id).map(c -> new GameDto(c.currentGame));
+    @GetMapping("{name}/currentGame")
+    public Optional<GameDto> clubCurrentGame(@PathVariable String name) {
+        return clubs.getClubById(name).map(c -> new GameDto(c.currentGame));
     }
 
 
-    @PatchMapping("{id}/currentGame")
-    public void clubCurrentGame(@PathVariable Long id, @RequestParam Long gameId) {
-        clubs.setCurrentGame(id, gameId);
+    @PatchMapping("{name}/currentGame")
+    public void clubCurrentGame(@PathVariable String name, @RequestParam Long gameId) {
+        clubs.setCurrentGame(name, gameId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public HttpStatus create(@RequestBody ClubCreateRequest club) {
-        if (clubs.createClub(club.name(), club.password())) {
+        if (clubs.createClub(club.name(), club.displayName(), club.password())) {
             return HttpStatus.CREATED;
         } else {
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
     }
 
-    @PostMapping("/{id}/backlog")
+    @PostMapping("/{name}/backlog")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Iterable<GameDto>> addGame(@PathVariable Long id, @RequestParam Long gameId) {
-        var maybeClub = clubs.getClubById(id);
+    public ResponseEntity<Iterable<GameDto>> addGame(@PathVariable String name, @RequestParam Long gameId) {
+        var maybeClub = clubs.getClubById(name);
         var maybeGame = games.findById(gameId);
         if (maybeClub.isPresent() && maybeGame.isPresent()) {
             var club = maybeClub.get();
@@ -87,15 +84,15 @@ public class ClubController {
     }
 
 
-    @DeleteMapping("/{id}/backlog")
+    @DeleteMapping("/{name}/backlog")
     @ResponseStatus(HttpStatus.OK)
-    public void removeGame(@PathVariable Long id, @RequestParam Long gameId) {
-        clubs.removeGameFromBacklog(id, gameId);
+    public void removeGame(@PathVariable String name, @RequestParam Long gameId) {
+        clubs.removeGameFromBacklog(name, gameId);
     }
 
-    @GetMapping("/{id}/gamesEveryone")
-    public Iterable<GameDto> getGamesOwnedByEveryone(@PathVariable Long id) {
-       var club = clubs.getClubById(id).orElseThrow();
+    @GetMapping("/{name}/gamesEveryone")
+    public Iterable<GameDto> getGamesOwnedByEveryone(@PathVariable String name) {
+       var club = clubs.getClubById(name).orElseThrow();
        return clubs.getGamesOwnedByAll(club);
     }
 }
