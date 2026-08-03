@@ -25,9 +25,6 @@ public class UserService {
     @Autowired
     ClubRepository clubRepository;
 
-    @Autowired
-    ClubService clubService;
-
     private UserDetails getSpringUser() {
         return (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
@@ -69,16 +66,6 @@ public class UserService {
                 .stream()
                 .map(GameDto::new)
                 .toList();
-    }
-
-    boolean joinClub(String clubName, String password) {
-        try {
-            var club = clubRepository.findById(clubName).orElseThrow();
-            var user = getLoggedInUser().orElseThrow();
-            return clubService.joinClub(user, club, password);
-        } catch (Exception e) {
-            return false;
-        }
     }
 
 }

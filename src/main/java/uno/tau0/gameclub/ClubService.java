@@ -101,7 +101,9 @@ public class ClubService {
         clubs.save(club);
     }
 
-    boolean joinClub(User user, Club club, String password) {
+    boolean joinClub(String clubName, String password) {
+        var club = clubs.findById(clubName).orElseThrow();
+        var user = userService.getLoggedInUser().orElseThrow();
         if (userService.isAdmin() || passwordEncoder.matches(password, club.password)) {
             user.clubs.add(club);
             club.members.add(user);

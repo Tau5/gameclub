@@ -35,6 +35,9 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    ClubService clubService;
+
     UserRepository users;
 
     UserController(UserRepository repo) {
@@ -83,7 +86,7 @@ public class UserController {
     @PostMapping("me/clubs")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<String> joinClub(@RequestBody JoinClubRequest request) {
-        if (userService.joinClub(request.clubName(), request.password())) {
+        if (clubService.joinClub(request.clubName(), request.password())) {
             return ResponseEntity.status(HttpStatus.CREATED).body("Successfully joined club");
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Failed to join club");
