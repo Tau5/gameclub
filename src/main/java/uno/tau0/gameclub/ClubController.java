@@ -50,7 +50,13 @@ public class ClubController {
 
     @GetMapping("{name}/currentGame")
     public Optional<GameDto> clubCurrentGame(@PathVariable String name) {
-        return clubs.getClubById(name).map(c -> new GameDto(c.currentGame));
+        return clubs.getClubById(name).flatMap(c -> {
+            if (c.currentGame != null) {
+                return Optional.of(new GameDto(c.currentGame));
+            } else {
+                return Optional.empty();
+            }
+        });
     }
 
 
