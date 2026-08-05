@@ -1,4 +1,4 @@
-package uno.tau0.gameclub;
+package uno.tau0.gameclub.entity;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;

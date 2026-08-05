@@ -4,9 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uno.tau0.gameclub.dto.GameDto;
+import uno.tau0.gameclub.entity.Club;
+import uno.tau0.gameclub.entity.Game;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -48,15 +49,15 @@ public class ClubService {
     boolean hasPermission(Club club) {
         var isAdmin = userService.isAdmin();
         var userIsInClub = userService.getLoggedInUser().stream().anyMatch(u -> {
-            return u.clubs.stream().anyMatch(c -> c.name.equals(club.name));
+            return u.clubs.stream().anyMatch(c -> c.getName().equals(club.getName()));
         });
         return isAdmin || userIsInClub;
     }
 
     void addGameToBacklog(Club club, Game game) {
         if (!hasPermission(club)) return;
-        if (!club.backlog.stream().anyMatch(g -> g.getId() == game.getId())) {
-            club.backlog.add(game);
+        if (!club.getBacklog().stream().anyMatch(g -> g.getId() == game.getId())) {
+            club.getBacklog().add(game);
             clubs.save(club);
         }
     }
@@ -66,7 +67,7 @@ public class ClubService {
         Game game = games.findById(gameId).orElseThrow();
 
         if (!hasPermission(club)) return;
-        club.backlog.removeIf(g -> g.getId().equals(game.getId()));
+        club.getBacklog().removeIf(g -> g.getId().equals(game.getId()));
         clubs.save(club);
     }
 
@@ -79,7 +80,7 @@ public class ClubService {
     }
 
     Iterable<GameDto> getBacklog(Club club) {
-        return club.backlog.stream().map(GameDto::new).toList();
+        return club.getBacklog().stream().map(GameDto::new).toList();
     }
 
     Iterable<GameDto> getGamesOwnedByAll(Club club) {
@@ -104,9 +105,9 @@ public class ClubService {
     boolean joinClub(String clubName, String password) {
         var club = clubs.findById(clubName).orElseThrow();
         var user = userService.getLoggedInUser().orElseThrow();
-        if (userService.isAdmin() || passwordEncoder.matches(password, club.password)) {
+        if (userService.isAdmin() || passwordEncoder.matches(password, club.getPassword())) {
             user.clubs.add(club);
-            club.members.add(user);
+            club.getMembers().add(user);
 
             userRepository.save(user);
             clubs.save(club);

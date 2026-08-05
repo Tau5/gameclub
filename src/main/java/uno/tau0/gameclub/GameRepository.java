@@ -1,8 +1,8 @@
 package uno.tau0.gameclub;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import uno.tau0.gameclub.entity.Game;
 
 import java.util.List;
 

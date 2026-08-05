@@ -1,6 +1,6 @@
 package uno.tau0.gameclub.dto;
 
-import uno.tau0.gameclub.Game;
+import uno.tau0.gameclub.entity.Game;
 
 public record GameDto(
         Long id,

@@ -1,7 +1,6 @@
-package uno.tau0.gameclub;
+package uno.tau0.gameclub.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 

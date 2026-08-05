@@ -7,11 +7,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import uno.tau0.gameclub.dto.GameDto;
 import uno.tau0.gameclub.dto.JoinClubRequest;
+import uno.tau0.gameclub.entity.User;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /*
 ENDPOINTS

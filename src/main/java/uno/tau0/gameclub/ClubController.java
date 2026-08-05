@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uno.tau0.gameclub.dto.ClubCreateRequest;
 import uno.tau0.gameclub.dto.GameDto;
+import uno.tau0.gameclub.entity.Club;
 
 import java.util.Optional;
 
@@ -14,7 +15,7 @@ record ClubDTO (
     String displayName
 ) {
     ClubDTO(Club club) {
-        this(club.name, club.displayName);
+        this(club.getName(), club.getDisplayName());
     }
 }
 
@@ -51,14 +52,13 @@ public class ClubController {
     @GetMapping("{name}/currentGame")
     public Optional<GameDto> clubCurrentGame(@PathVariable String name) {
         return clubs.getClubById(name).flatMap(c -> {
-            if (c.currentGame != null) {
-                return Optional.of(new GameDto(c.currentGame));
+            if (c.getCurrentGame() != null) {
+                return Optional.of(new GameDto(c.getCurrentGame()));
             } else {
                 return Optional.empty();
             }
         });
     }
-
 
     @PatchMapping("{name}/currentGame")
     public void clubCurrentGame(@PathVariable String name, @RequestParam Long gameId) {
@@ -88,7 +88,6 @@ public class ClubController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
 
     @DeleteMapping("/{name}/backlog")
     @ResponseStatus(HttpStatus.OK)
