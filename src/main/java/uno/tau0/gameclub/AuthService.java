@@ -25,7 +25,7 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         // Create new user with encoded password
 
-        var user = userService.createUserWithDefaults(
+        var user = userService.createUserWithoutInvitation(
                 request.username(),
                 request.displayName(),
                 request.password()

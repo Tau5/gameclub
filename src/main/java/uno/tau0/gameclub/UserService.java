@@ -10,6 +10,7 @@ import uno.tau0.gameclub.entity.User;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -25,6 +26,9 @@ public class UserService {
     @Autowired
     ClubRepository clubRepository;
 
+    @Autowired
+    InvitationService invitationService;
+
     private UserDetails getSpringUser() {
         return (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
@@ -39,7 +43,7 @@ public class UserService {
         return user.getAuthorities().contains("ROLE_ADMIN");
     }
 
-    User createUserWithDefaults(String username, String displayName, String password) {
+    User createUserWithoutInvitation(String username, String displayName, String password) {
        User user = new User(
                username,
                displayName,
@@ -47,6 +51,18 @@ public class UserService {
        );
 
        return userRepository.save(user);
+    }
+
+    User createUser(String username, String displayName, String password, UUID invitationCode) throws InvitationService.InvalidInvitationException, InvitationService.InvitationNotFoundException {
+        invitationService.tryUseInvitation(invitationCode);
+
+        User user = new User(
+                username,
+                displayName,
+                passwordEncoder.encode(password)
+        );
+
+        return userRepository.save(user);
     }
 
     void addOwnedGame(User user, Long gameId) throws Exception {

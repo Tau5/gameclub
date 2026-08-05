@@ -22,7 +22,7 @@ public class InitialSetupService {
     Optional<User> registerUser(String username, String displayName, String password) {
         if (isAvailable()) {
             return Optional.of(
-                    userService.createUserWithDefaults(username, displayName, password)
+                    userService.createUserWithoutInvitation(username, displayName, password)
             );
         }
 

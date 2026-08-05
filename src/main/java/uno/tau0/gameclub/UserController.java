@@ -100,7 +100,7 @@ public class UserController {
 
     @PostMapping()
     public UserDto createUser(@RequestBody NewUser userData) {
-        return new UserDto(userService.createUserWithDefaults(
+        return new UserDto(userService.createUserWithoutInvitation(
                userData.username,
                userData.displayName,
                userData.password
