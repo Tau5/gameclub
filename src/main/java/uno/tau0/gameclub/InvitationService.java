@@ -53,7 +53,11 @@ public class InvitationService {
     }
 
     private boolean exceedsInvitationLimit(User user) {
-        return List.of(invitationRepository.findValidInvitationsByUser(user)).size() > maxInvitations;
+        return List.of(invitationRepository.findValidInvitationsByUser(user.getName())).size() > maxInvitations;
+    }
+
+    public Iterable<Invitation> getInvitationsOfUser(User user) {
+        return invitationRepository.findValidInvitationsByUser(user.getName());
     }
 
     Invitation generateInvitation(User user) throws InvitationLimitReachedException {

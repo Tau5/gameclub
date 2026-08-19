@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -52,4 +53,5 @@ public class User implements UserDetails {
     public String getUsername() {
         return name;
     }
+
 }

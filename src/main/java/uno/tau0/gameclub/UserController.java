@@ -6,7 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import uno.tau0.gameclub.dto.GameDto;
+import uno.tau0.gameclub.dto.InvitationDto;
 import uno.tau0.gameclub.dto.JoinClubRequest;
+import uno.tau0.gameclub.dto.RegisterRequest;
+import uno.tau0.gameclub.entity.Invitation;
 import uno.tau0.gameclub.entity.User;
 
 import java.util.List;
@@ -38,6 +41,9 @@ public class UserController {
     ClubService clubService;
 
     UserRepository users;
+
+    @Autowired
+    InvitationService invitationService;
 
     UserController(UserRepository repo) {
        this.users = repo;
@@ -92,18 +98,32 @@ public class UserController {
         }
     }
 
-    record NewUser (
-       String username,
-       String displayName,
-       String password
-    ) { }
-
-    @PostMapping()
-    public UserDto createUser(@RequestBody NewUser userData) {
-        return new UserDto(userService.createUserWithoutInvitation(
-               userData.username,
-               userData.displayName,
-               userData.password
-        ));
+    @PostMapping("me/invitations")
+    @ResponseStatus(HttpStatus.CREATED)
+    public InvitationDto generateInvitation() throws InvitationService.InvitationLimitReachedException {
+        var user = userService.getLoggedInUser().orElseThrow();
+        return InvitationDto.from(invitationService.generateInvitation(user));
     }
+
+    @GetMapping("me/invitations")
+    public Iterable<InvitationDto> listInvitations() {
+        var user = userService.getLoggedInUser().orElseThrow();
+        return InvitationDto.from(invitationService.getInvitationsOfUser(user));
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public String invitationLimitReached(InvitationService.InvitationLimitReachedException ex) {
+        return "Invitation limit reached";
+    }
+
+    //@PostMapping()
+    //public UserDto createUser(@RequestBody RegisterRequest userData) throws InvitationService.InvalidInvitationException, InvitationService.InvitationNotFoundException {
+    //    return new UserDto(userService.createUser(
+    //        userData.username(),
+    //        userData.displayName(),
+    //        userData.password(),
+    //        userData.invitationCode()
+    //    ));
+    //}
 }

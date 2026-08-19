@@ -1,18 +1,16 @@
 package uno.tau0.gameclub.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import uno.tau0.gameclub.UserRepository;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class Invitation {
     @Id
@@ -20,6 +18,7 @@ public class Invitation {
     UUID id;
 
     @NonNull
+    @ManyToOne
     User generatedBy;
 
     @NonNull
@@ -31,5 +30,4 @@ public class Invitation {
     public boolean isValid() {
         return expiry.isAfter(Instant.now()) && usesLeft > 0;
     }
-
 }

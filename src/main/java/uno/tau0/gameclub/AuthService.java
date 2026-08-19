@@ -22,13 +22,14 @@ public class AuthService {
     @Autowired
     UserService userService;
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) throws InvitationService.InvalidInvitationException, InvitationService.InvitationNotFoundException {
         // Create new user with encoded password
 
-        var user = userService.createUserWithoutInvitation(
+        var user = userService.createUser(
                 request.username(),
                 request.displayName(),
-                request.password()
+                request.password(),
+                request.invitationCode()
         );
 
         // Save to database
