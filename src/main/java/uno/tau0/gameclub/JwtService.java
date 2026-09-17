@@ -3,23 +3,34 @@ package uno.tau0.gameclub;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.security.Key;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
+    SecureRandom secureRandom = new SecureRandom();
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private Optional<SecretKey> secretKey = Optional.empty();
+
+    @Value("${gameclub.secretkey-path}")
+    private String secretKeyPath;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
@@ -79,7 +90,37 @@ public class JwtService {
     // Create the signing key from the secret
     private SecretKey getSigningKey() {
         // For production, use a properly generated Base64-encoded key
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        if (secretKey.isEmpty()) {
+            try {
+                File file = new File(secretKeyPath);
+                if (file.exists()) {
+                    secretKey = Optional.of(readSecretKeyFromFile(file));
+                } else {
+                    secretKey = Optional.of(generateAndWriteSecretKey());
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return secretKey.get();
+    }
+
+    private SecretKey readSecretKeyFromFile(File file) throws IOException {
+        var fr = new FileReader(file);
+        var base64 = fr.readAllAsString();
+        var decoded = Decoders.BASE64.decode(base64);
+        return Keys.hmacShaKeyFor(decoded);
+    }
+    private SecretKey generateAndWriteSecretKey() throws IOException {
+        File file = new File(secretKeyPath);
+        byte[] keyBytes = new byte[256];
+        secureRandom.nextBytes(keyBytes);
+        String base64 = Encoders.BASE64.encode(keyBytes);
+
+        FileWriter fw = new FileWriter(file);
+        fw.write(base64);
+        fw.close();
+
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
