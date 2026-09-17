@@ -44,13 +44,11 @@ public class UserService {
     }
 
     User createUserWithoutInvitation(String username, String displayName, String password) {
-       User user = new User(
+       return new User(
                username,
                displayName,
                passwordEncoder.encode(password)
        );
-
-       return userRepository.save(user);
     }
 
     User createUser(String username, String displayName, String password, UUID invitationCode) throws InvitationService.InvalidInvitationException, InvitationService.InvitationNotFoundException {
@@ -62,7 +60,7 @@ public class UserService {
                 passwordEncoder.encode(password)
         );
 
-        return userRepository.save(user);
+        return user;
     }
 
     void addOwnedGame(User user, Long gameId) throws Exception {

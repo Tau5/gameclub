@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import uno.tau0.gameclub.dto.AuthRequest;
 import uno.tau0.gameclub.dto.AuthResponse;
 import uno.tau0.gameclub.dto.RegisterRequest;
+import uno.tau0.gameclub.entity.User;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final InitialSetupService initialSetupService;
 
     @Autowired
     UserService userService;
@@ -25,12 +29,22 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) throws InvitationService.InvalidInvitationException, InvitationService.InvitationNotFoundException {
         // Create new user with encoded password
 
-        var user = userService.createUser(
+        var maybeUser = initialSetupService.registerUser(
                 request.username(),
                 request.displayName(),
-                request.password(),
-                request.invitationCode()
+                request.password()
         );
+
+        if (maybeUser.isEmpty()) {
+            maybeUser = Optional.of(userService.createUser(
+                    request.username(),
+                    request.displayName(),
+                    request.password(),
+                    request.invitationCode().orElse(null)
+            ));
+        }
+
+        var user = maybeUser.get();
 
         // Save to database
         userRepository.save(user);
