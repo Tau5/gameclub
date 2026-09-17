@@ -2,6 +2,7 @@ package uno.tau0.gameclub;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -59,6 +60,9 @@ class DBUserDetailsService implements UserDetailsService {
 
 @Configuration
 public class SecurityConfig {
+    @Value("${server.hostname}")
+    private String hostname;
+
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
@@ -75,7 +79,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         var corsConf = new CorsConfiguration()
-                .setAllowedOriginPatterns(List.of("http://localhost:4200", "http://localhost:4269"))
+                .setAllowedOriginPatterns(List.of("http://" + hostname + ":4200", "http://" + hostname + ":4269"))
                 .applyPermitDefaultValues();
         corsConf.setAllowCredentials(true);
         corsConf.addAllowedMethod("PATCH");
