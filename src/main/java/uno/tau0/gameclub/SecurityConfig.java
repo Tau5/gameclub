@@ -110,6 +110,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers( "/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/available").permitAll()
+                        .requestMatchers("/swagger-ui/*").permitAll()
                         .requestMatchers("/clubs/admin/all").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
